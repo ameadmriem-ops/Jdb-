@@ -1088,6 +1088,22 @@ body.page-episodes-active .top-bar {
   display: block;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+.details-main-title.is-rtl,
+.details-main-title[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+.details-main-title.is-ltr,
+.details-main-title[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
 }
 
 .details-meta-pills-row {
@@ -7921,7 +7937,11 @@ window.renderDetailsPage = function(fid) {
   // Banner image (Panoramic horizontal poster, fallback to backdrop or poster)
   let bannerImg = (item.banner || item.horizontalPoster || item.backdrop || item.poster || "").trim();
   let posterImg = (item.poster || "").trim();
-  let safeTitle = window.escapeDescHtml(item.title || "بدون عنوان");
+  let rawTitle = (item.title || "بدون عنوان").trim();
+  let safeTitle = window.escapeDescHtml(rawTitle);
+  let isArabicTitle = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(rawTitle);
+  let titleDir = isArabicTitle ? "rtl" : "ltr";
+  let titleClass = isArabicTitle ? "details-main-title is-rtl" : "details-main-title is-ltr";
   let yearText = item.year || 2024;
 
   // Type badge label
@@ -8091,7 +8111,7 @@ window.renderDetailsPage = function(fid) {
           <span class="details-poster-type-badge">${window.escapeDescHtml(typeLabel)}</span>
         </div>
         <div class="details-header-meta-col">
-          <h1 class="details-main-title">${safeTitle}</h1>
+          <h1 class="${titleClass}" dir="${titleDir}" title="${safeTitle}">${safeTitle}</h1>
           <div class="details-meta-pills-row">
             <span class="details-meta-pill year-pill">${yearText}</span>
             <span class="details-meta-pill type-pill">${window.escapeDescHtml(typeLabel)}</span>
