@@ -136,7 +136,8 @@ body{background:#000;color:#fff;font-family:Arial,sans-serif;-webkit-tap-highlig
   pointer-events: none;
 }
 
-/* Title under poster */
+/* Base card title under poster */
+.card-title,
 .movie-card h3 {
   font-size: 13px !important;
   font-weight: bold !important;
@@ -147,9 +148,29 @@ body{background:#000;color:#fff;font-family:Arial,sans-serif;-webkit-tap-highlig
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  text-align: right !important;
-  direction: rtl !important;
   display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+}
+
+.card-title.is-rtl,
+.movie-card h3.is-rtl,
+.card-title[dir="rtl"],
+.movie-card h3[dir="rtl"] {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+.card-title.is-ltr,
+.movie-card h3.is-ltr,
+.card-title[dir="ltr"],
+.movie-card h3[dir="ltr"] {
+  direction: ltr !important;
+  text-align: left !important;
 }
 
 /* Subtitle: Year • Type under title */
@@ -264,7 +285,9 @@ body{background:#000;color:#fff;font-family:Arial,sans-serif;-webkit-tap-highlig
 }
 
 .cards-grid-3 .movie-card h3,
-.movies-grid .movie-card h3 {
+.cards-grid-3 .card-title,
+.movies-grid .movie-card h3,
+.movies-grid .card-title {
   font-size: 12px !important;
   font-weight: bold !important;
   color: #fff !important;
@@ -272,10 +295,34 @@ body{background:#000;color:#fff;font-family:Arial,sans-serif;-webkit-tap-highlig
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  text-align: right !important;
-  direction: rtl !important;
   display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
   line-height: 1.3 !important;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+}
+
+.cards-grid-3 .movie-card h3.is-rtl,
+.cards-grid-3 .card-title.is-rtl,
+.movies-grid .movie-card h3.is-rtl,
+.movies-grid .card-title.is-rtl,
+.cards-grid-3 .card-title[dir="rtl"],
+.movies-grid .card-title[dir="rtl"] {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+.cards-grid-3 .movie-card h3.is-ltr,
+.cards-grid-3 .card-title.is-ltr,
+.movies-grid .movie-card h3.is-ltr,
+.movies-grid .card-title.is-ltr,
+.cards-grid-3 .card-title[dir="ltr"],
+.movies-grid .card-title[dir="ltr"] {
+  direction: ltr !important;
+  text-align: left !important;
 }
 
 .cards-grid-3 .movie-card p,
@@ -844,6 +891,25 @@ body.light-mode .auth-input{background:#f7f8fa;color:#111;border:1.5px solid #cf
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+.home-card-title.is-rtl,
+.home-card-title[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+.home-card-title.is-ltr,
+.home-card-title[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
 }
 .home-card-sub {
   font-size: 11px;
@@ -1075,7 +1141,8 @@ body.page-episodes-active .top-bar {
   padding-bottom: 2px;
 }
 
-.details-main-title {
+.details-main-title,
+.detail-title {
   font-size: 19px;
   font-weight: 900;
   color: #fff;
@@ -1095,13 +1162,17 @@ body.page-episodes-active .top-bar {
 }
 
 .details-main-title.is-rtl,
-.details-main-title[dir="rtl"] {
+.detail-title.is-rtl,
+.details-main-title[dir="rtl"],
+.detail-title[dir="rtl"] {
   direction: rtl;
   text-align: right;
 }
 
 .details-main-title.is-ltr,
-.details-main-title[dir="ltr"] {
+.detail-title.is-ltr,
+.details-main-title[dir="ltr"],
+.detail-title[dir="ltr"] {
   direction: ltr;
   text-align: left;
 }
@@ -7059,10 +7130,16 @@ window.createCardElement = function(item) {
 
 window.updateCardElement = function(cardEl, item) {
   if (!cardEl || !item) return;
-  const h3 = cardEl.querySelector("h3");
-  if (h3 && h3.textContent !== (item.title || "")) {
-    h3.textContent = item.title || "";
-    h3.title = item.title || "";
+  const h3 = cardEl.querySelector("h3.card-title, h3");
+  if (h3) {
+    const raw = (item.title || "").trim();
+    if (h3.textContent !== raw) {
+      h3.textContent = raw;
+      h3.title = raw;
+      const isArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(raw);
+      h3.setAttribute("dir", isArabic ? "rtl" : "ltr");
+      h3.className = isArabic ? "card-title is-rtl" : "card-title is-ltr";
+    }
   }
   const img = cardEl.querySelector("img.poster");
   const newPoster = (item.poster || "").trim();
@@ -7308,6 +7385,11 @@ window.createCard = (item) => {
   let metaText = `${year} • ${metaCategory}`;
   let posterUrl = (item.poster || "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=400").trim();
   let isCached = window.isPosterCached(posterUrl);
+  let cardRawTitle = (item.title || "").trim();
+  let cardSafeTitle = window.escapeDescHtml(cardRawTitle);
+  let cardIsArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(cardRawTitle);
+  let cardDir = cardIsArabic ? "rtl" : "ltr";
+  let cardClass = cardIsArabic ? "card-title is-rtl" : "card-title is-ltr";
 
   return `
     <div class="movie-card progressive-item-enter" data-card-fid="${item.firebaseId}" tabindex="0" onclick="${click}">
@@ -7329,7 +7411,7 @@ window.createCard = (item) => {
         ${versionBadgeHtml}
         ${window.getItemRatingBadgeHtml(item)}
       </div>
-      <h3 title="${window.escapeDescHtml(item.title || '')}">${window.escapeDescHtml(item.title || '')}</h3>
+      <h3 class="${cardClass}" dir="${cardDir}" title="${cardSafeTitle}">${cardSafeTitle}</h3>
       <p>${window.escapeDescHtml(metaText)}</p>
       ${editPosterBtn}
     </div>
@@ -7474,17 +7556,22 @@ window.renderHome = () => {
     let catLabel = item.category || (isAnimation ? "أنميشن" : "مسلسل");
     let posterUrl = (item.poster || "").trim();
     let isCached = window.isPosterCached(posterUrl);
+    let rawItemTitle = (item.title || "").trim();
+    let safeItemTitle = window.escapeDescHtml(rawItemTitle);
+    let isArTitle = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(rawItemTitle);
+    let itemDir = isArTitle ? "rtl" : "ltr";
+    let itemClass = isArTitle ? "home-card-title card-title is-rtl" : "home-card-title card-title is-ltr";
     return `
       <div class="home-content-card progressive-item-enter" data-card-fid="${item.firebaseId}" onclick="openDetails('${item.firebaseId}')">
         <div class="home-card-poster-wrap">
           <div class="poster-placeholder-skeleton ${isCached ? 'hidden' : ''}">
             <span class="poster-placeholder-icon" style="font-size:20px">🎬</span>
           </div>
-          <img class="poster ${isCached ? 'loaded' : ''}" data-poster-fid="${item.firebaseId}" src="${posterUrl}" alt="${window.escapeDescHtml(item.title)}" loading="lazy" decoding="async" onload="window.onPosterLoaded(this)" onerror="window.onPosterError(this, '${posterUrl}')">
+          <img class="poster ${isCached ? 'loaded' : ''}" data-poster-fid="${item.firebaseId}" src="${posterUrl}" alt="${safeItemTitle}" loading="lazy" decoding="async" onload="window.onPosterLoaded(this)" onerror="window.onPosterError(this, '${posterUrl}')">
           <span class="home-card-badge">${window.escapeDescHtml(epBadge)}</span>
           ${window.getItemRatingBadgeHtml(item)}
         </div>
-        <div class="home-card-title">${window.escapeDescHtml(item.title)}</div>
+        <div class="${itemClass}" dir="${itemDir}" title="${safeItemTitle}">${safeItemTitle}</div>
         <div class="home-card-sub">${window.escapeDescHtml(catLabel)} • ${item.year || ""}</div>
       </div>
     `;
@@ -7497,17 +7584,22 @@ window.renderHome = () => {
     let catLabel = item.category || (isAnimation ? "أنميشن" : "مسلسل");
     let posterUrl = (item.poster || "").trim();
     let isCached = window.isPosterCached(posterUrl);
+    let rawItemTitle = (item.title || "").trim();
+    let safeItemTitle = window.escapeDescHtml(rawItemTitle);
+    let isArTitle = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(rawItemTitle);
+    let itemDir = isArTitle ? "rtl" : "ltr";
+    let itemClass = isArTitle ? "home-card-title card-title is-rtl" : "home-card-title card-title is-ltr";
     return `
       <div class="home-content-card progressive-item-enter" data-card-fid="${item.firebaseId}" onclick="openDetails('${item.firebaseId}')">
         <div class="home-card-poster-wrap">
           <div class="poster-placeholder-skeleton ${isCached ? 'hidden' : ''}">
             <span class="poster-placeholder-icon" style="font-size:20px">🎬</span>
           </div>
-          <img class="poster ${isCached ? 'loaded' : ''}" data-poster-fid="${item.firebaseId}" src="${posterUrl}" alt="${window.escapeDescHtml(item.title)}" loading="lazy" decoding="async" onload="window.onPosterLoaded(this)" onerror="window.onPosterError(this, '${posterUrl}')">
+          <img class="poster ${isCached ? 'loaded' : ''}" data-poster-fid="${item.firebaseId}" src="${posterUrl}" alt="${safeItemTitle}" loading="lazy" decoding="async" onload="window.onPosterLoaded(this)" onerror="window.onPosterError(this, '${posterUrl}')">
           <span class="home-card-badge" style="background:rgba(0,180,240,0.92);color:#000;font-weight:900">${item.year || 2024}</span>
           ${window.getItemRatingBadgeHtml(item)}
         </div>
-        <div class="home-card-title">${window.escapeDescHtml(item.title)}</div>
+        <div class="${itemClass}" dir="${itemDir}" title="${safeItemTitle}">${safeItemTitle}</div>
         <div class="home-card-sub">${window.escapeDescHtml(catLabel)} ${item.version ? `• ${item.version}` : ''}</div>
       </div>
     `;
@@ -7541,6 +7633,11 @@ window.renderHome = () => {
     }
     let posterUrl = (item.poster || "").trim();
     let isCached = window.isPosterCached(posterUrl);
+    let rawItemTitle = (item.title || "").trim();
+    let safeItemTitle = window.escapeDescHtml(rawItemTitle);
+    let isArTitle = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(rawItemTitle);
+    let itemDir = isArTitle ? "rtl" : "ltr";
+    let itemClass = isArTitle ? "home-card-title card-title is-rtl" : "home-card-title card-title is-ltr";
 
     return `
       <div class="home-content-card progressive-item-enter" data-card-fid="${item.firebaseId}" onclick="openDetails('${item.firebaseId}')">
@@ -7552,7 +7649,7 @@ window.renderHome = () => {
           <span class="home-card-rank-badge" style="${rankBadgeStyle}">${rankText}</span>
           ${window.getItemRatingBadgeHtml(item)}
         </div>
-        <div class="home-card-title">${window.escapeDescHtml(item.title)}</div>
+        <div class="${itemClass}" dir="${itemDir}" title="${safeItemTitle}">${safeItemTitle}</div>
         <div class="home-card-sub">${window.escapeDescHtml(catLabel)} • ${item.year || ""}</div>
       </div>
     `;
